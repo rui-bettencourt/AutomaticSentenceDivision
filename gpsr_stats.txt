@@ -1,0 +1,17 @@
+1 | find | - 1 | find | - Escort Francis to the sink, you will find her at the dining table
+1 | Tell | - 2 | Tell | waving | - Tell the time to the person waving in the kitchen
+1 | Dump | - 1 | Dump | - Dump the trash
+3 | please | greet | introduce | - 3 | please | greet | introduce | - Could you please greet James at the main door and introduce him to everyone in the corridor.
+2 | meet | follow | - 3 | meet | dining | follow | - Please meet Charlie at the dining table, follow him, and navigate to the corridor
+3 | go | meet | escort | - 2 | go | escort | - Robot please go to the dining table, meet Elizabeth, and escort her
+2 | meet | follow | - 1 | follow | - Navigate to the bed, meet Patricia, and follow her
+1 | find | - 1 | find | - Lead Michael to the entrance, you may find him at the end table
+2 | give | object | - 2 | give | object | - Robot please give me the left most object from the dining table
+0 | - 0 | - Accompany Skyler from the sink to the entrance
+3 | Go | meet | follow | - 2 | Go | follow | - Go to the desk, meet Charlie, and follow him
+2 | please | give | - 2 | please | give | - Could you please give me the smallest fruits from the bookcase
+0 | - 0 | - Face Alex at the sink and escort him to his uber
+3 | meet | follow | go | - 3 | meet | follow | go | - Could you meet Jennifer at the dishwasher, follow her, and go to the corridor
+0 | - 0 | - Find Michael at the desk and accompany him to his taxi
+3 | Tell | cloth | are | - 3 | Tell | cloth | are | - Tell me how many cloth there are on the side table
+0 | - 0 | - Place the tray on the side table
