@@ -93,7 +93,7 @@ def prepareData(file1, file2, reverse=False):
     return input_lang, output_lang, pairs
 
 
-input_lang, output_lang, pairs = prepareData('dataset_input.txt', 'dataset_output.txt', False)
+input_lang, output_lang, pairs = prepareData('dataset_input.txt', 'dataset_output_no_pronouns.txt', False)
 print(random.choice(pairs))
 
 
@@ -134,7 +134,7 @@ class DecoderRNN(nn.Module):
     def initHidden(self):
         return torch.zeros(1, 1, self.hidden_size, device=device)
     
-MAX_LENGTH = 30
+MAX_LENGTH = 50
     
 class AttnDecoderRNN(nn.Module):
     def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=MAX_LENGTH):
@@ -261,6 +261,8 @@ def timeSince(since, percent):
 def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
     start = time.time()
     plot_losses = []
+    iterations = []
+    best_loss = 100
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
 
@@ -285,27 +287,41 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
             print_loss_total = 0
             print('%s (%d %d%%) %.4f' % (timeSince(start, iter / n_iters),
                                          iter, iter / n_iters * 100, print_loss_avg))
+            # torch.save(encoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/encoder1-" + str(iter) + ".pt")
+            # torch.save(attn_decoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/attn_decoder1-" + str(iter) + ".pt")
+            if print_loss_avg < best_loss:
+                best_loss = print_loss_avg
+                torch.save(encoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/encoder1_best.pt")
+                torch.save(attn_decoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/attn_decoder1_best.pt")
 
         if iter % plot_every == 0:
             plot_loss_avg = plot_loss_total / plot_every
             plot_losses.append(plot_loss_avg)
+            iterations.append(iter)
             plot_loss_total = 0
 
-    showPlot(plot_losses)
-
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
-import matplotlib.ticker as ticker
-import numpy as np
+# plt.switch_backend('agg')
+# import matplotlib.ticker as ticker
+# import numpy as np
+import matplotlib.animation as animation
+from matplotlib import style
+
+style.use('fivethirtyeight')
+
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1)
 
 
-def showPlot(points):
-    plt.figure()
-    fig, ax = plt.subplots()
-    # this locator puts ticks at regular intervals
-    loc = ticker.MultipleLocator(base=0.2)
-    ax.yaxis.set_major_locator(loc)
-    plt.plot(points)
+def showPlot(xs,points):
+    # plt.figure()
+    # fig, ax = plt.subplots()
+    # # this locator puts ticks at regular intervals
+    # loc = ticker.MultipleLocator(base=0.2)
+    # ax.yaxis.set_major_locator(loc)
+    # plt.plot(points)
+    ax1.clear()
+    ax1.plot(xs, points)
     
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     with torch.no_grad():
@@ -356,9 +372,17 @@ hidden_size = 256
 encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
 
-trainIters(encoder1, attn_decoder1, 75000, print_every=5000)
+# trainIters(encoder1, attn_decoder1, 75000, print_every=500)
+encoder1.load_state_dict(torch.load("/home/harode/AutomaticSentenceDivision/models/encoder1_best.pt"))
+attn_decoder1.load_state_dict(torch.load("/home/harode/AutomaticSentenceDivision/models/attn_decoder1_best.pt"))
 
 evaluateRandomly(encoder1, attn_decoder1)
 
-torch.save(encoder1.state_dict(), "/home/rui/AutomaticSentenceSimplification/models/encoder1.pt")
-torch.save(attn_decoder1.state_dict(), "/home/rui/AutomaticSentenceSimplification/models/attn_decoder1.pt")
+# sentence = "get a coke pick it up and follow mary to the kitchen"
+# print(sentence)
+# output_words, attentions = evaluate(encoder1, attn_decoder1, sentence)
+# output_sentence = ' '.join(output_words)
+# print(output_sentence)
+
+torch.save(encoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/encoder1.pt")
+torch.save(attn_decoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/attn_decoder1.pt")
