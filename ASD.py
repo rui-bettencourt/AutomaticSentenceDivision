@@ -4,11 +4,17 @@ import unicodedata
 import string
 import re
 import random
+import sys
 
 import torch
 import torch.nn as nn
 from torch import optim
 import torch.nn.functional as F
+
+args = str(sys.argv)
+train= False
+if len(args)>0 and args[0].lower() == 'train':
+    train = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -92,9 +98,9 @@ def prepareData(file1, file2, reverse=False):
     print(output_lang.name, output_lang.n_words)
     return input_lang, output_lang, pairs
 
-
-input_lang, output_lang, pairs = prepareData('dataset_input.txt', 'dataset_output_no_pronouns.txt', False)
-print(random.choice(pairs))
+if train:
+    input_lang, output_lang, pairs = prepareData('dataset_input.txt', 'dataset_output_no_pronouns.txt', False)
+    print(random.choice(pairs))
 
 
 class EncoderRNN(nn.Module):
@@ -300,28 +306,6 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lear
             iterations.append(iter)
             plot_loss_total = 0
 
-import matplotlib.pyplot as plt
-# plt.switch_backend('agg')
-# import matplotlib.ticker as ticker
-# import numpy as np
-import matplotlib.animation as animation
-from matplotlib import style
-
-style.use('fivethirtyeight')
-
-fig = plt.figure()
-ax1 = fig.add_subplot(1,1,1)
-
-
-def showPlot(xs,points):
-    # plt.figure()
-    # fig, ax = plt.subplots()
-    # # this locator puts ticks at regular intervals
-    # loc = ticker.MultipleLocator(base=0.2)
-    # ax.yaxis.set_major_locator(loc)
-    # plt.plot(points)
-    ax1.clear()
-    ax1.plot(xs, points)
     
 def evaluate(encoder, decoder, sentence, max_length=MAX_LENGTH):
     with torch.no_grad():
@@ -372,9 +356,11 @@ hidden_size = 256
 encoder1 = EncoderRNN(input_lang.n_words, hidden_size).to(device)
 attn_decoder1 = AttnDecoderRNN(hidden_size, output_lang.n_words, dropout_p=0.1).to(device)
 
-# trainIters(encoder1, attn_decoder1, 75000, print_every=500)
-encoder1.load_state_dict(torch.load("/home/harode/AutomaticSentenceDivision/models/encoder1_best.pt"))
-attn_decoder1.load_state_dict(torch.load("/home/harode/AutomaticSentenceDivision/models/attn_decoder1_best.pt"))
+if train:
+    trainIters(encoder1, attn_decoder1, 75000, print_every=500)
+else:
+    encoder1.load_state_dict(torch.load("/home/harode/AutomaticSentenceDivision/models/encoder1_best.pt"))
+    attn_decoder1.load_state_dict(torch.load("/home/harode/AutomaticSentenceDivision/models/attn_decoder1_best.pt"))
 
 evaluateRandomly(encoder1, attn_decoder1)
 
@@ -384,5 +370,6 @@ evaluateRandomly(encoder1, attn_decoder1)
 # output_sentence = ' '.join(output_words)
 # print(output_sentence)
 
-torch.save(encoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/encoder1.pt")
-torch.save(attn_decoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/attn_decoder1.pt")
+if train:
+    torch.save(encoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/encoder1.pt")
+    torch.save(attn_decoder1.state_dict(), "/home/harode/AutomaticSentenceDivision/models/attn_decoder1.pt")
